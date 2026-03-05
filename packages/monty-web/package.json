@@ -1,0 +1,25 @@
+{
+  "name": "monty-web",
+  "version": "0.0.0",
+  "description": "Browser WASM wrapper package for pydantic/monty",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/wrapper.js",
+  "types": "./dist/wrapper.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/wrapper.d.ts",
+      "default": "./dist/wrapper.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "clean": "rm -rf dist .cache"
+  },
+  "dependencies": {
+    "@napi-rs/wasm-runtime": "^1.1.1"
+  }
+}

@@ -1,0 +1,21 @@
+[package]
+name = "monty_expo_ffi"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Rust FFI bridge for monty-expo"
+
+[lib]
+name = "monty_expo_ffi"
+crate-type = ["staticlib", "cdylib"]
+
+[dependencies]
+jni = { version = "0.21.1", optional = true }
+monty = { git = "https://github.com/pydantic/monty.git", rev = "bf7c7ef4262055f2b55ab75bf1fe83d2ace674f2" }
+num-bigint = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[features]
+default = []
+android = ["dep:jni"]

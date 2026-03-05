@@ -1,0 +1,56 @@
+{
+  "name": "monty-expo",
+  "version": "0.1.0",
+  "description": "Expo Modules bridge for Monty on iOS and Android",
+  "license": "MIT",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
+  },
+  "source": "src/index.ts",
+  "files": [
+    "android",
+    "ios",
+    "src",
+    "build",
+    "expo-module.config.json",
+    "ios/MontyExpo.podspec",
+    "tsconfig.json"
+  ],
+  "scripts": {
+    "build": "expo-module build",
+    "build:rust": "bash ./scripts/build-rust-all.sh",
+    "build:rust:ios": "bash ./scripts/build-rust-ios.sh",
+    "build:rust:android": "bash ./scripts/build-rust-android.sh",
+    "build:native": "yarn build:rust && expo-module build",
+    "clean": "expo-module clean",
+    "lint": "expo-module lint",
+    "test": "expo-module test",
+    "prepare": "expo-module build"
+  },
+  "keywords": [
+    "expo",
+    "react-native",
+    "monty",
+    "python",
+    "module"
+  ],
+  "dependencies": {
+    "expo-modules-core": "^55.0.13"
+  },
+  "devDependencies": {
+    "expo": "^55.0.3",
+    "expo-module-scripts": "^55.0.2",
+    "react-native": "0.82.1",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}

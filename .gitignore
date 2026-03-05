@@ -1,0 +1,11 @@
+node_modules
+yarn-error.log
+.context
+
+packages/*/node_modules
+packages/*/.cache
+packages/*/dist
+packages/*/build
+packages/monty-expo/native/monty-expo-ffi/target
+packages/monty-expo/ios/rust
+packages/monty-expo/android/src/main/jniLibs

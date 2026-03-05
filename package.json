@@ -1,0 +1,23 @@
+{
+  "name": "monty-js",
+  "private": true,
+  "license": "MIT",
+  "packageManager": "yarn@1.22.22",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/react",
+      "**/react-dom",
+      "**/react-native",
+      "**/react-native/**"
+    ]
+  },
+  "scripts": {
+    "build": "yarn build:web && yarn build:expo",
+    "build:expo": "yarn workspace monty-expo build",
+    "build:web": "yarn workspace monty-web build",
+    "clean": "yarn workspaces run clean"
+  }
+}
