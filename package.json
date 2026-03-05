@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "Nitro Modules bridge for Monty on iOS, Android, and web",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ex3ndr/expo-monty.git"
+  },
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "react-native": "src/index.ts",
@@ -26,17 +30,16 @@
     "tsconfig.json"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && node ./scripts/copy-web-runtime.mjs",
-    "build:web-runtime": "node ./scripts/build-web-runtime.mjs",
+    "build": "yarn clean && yarn build:web && yarn build:rust && yarn codegen && yarn build:ts",
+    "build:ts": "tsc -p tsconfig.json && node ./scripts/copy-web-runtime.mjs",
+    "build:web": "node ./scripts/build-web-runtime.mjs",
     "codegen": "nitrogen --logLevel=\"debug\" && node post-script.js",
     "build:rust": "bash ./scripts/build-rust-all.sh",
     "build:rust:ios": "bash ./scripts/build-rust-ios.sh",
     "build:rust:android": "bash ./scripts/build-rust-android.sh",
-    "build:native": "yarn build:rust && yarn codegen && yarn build",
-    "build:release": "yarn clean && yarn build:web-runtime && yarn build:native",
     "clean": "rm -rf build",
-    "prepack": "yarn build:release",
-    "prepare": "yarn build"
+    "prepack": "yarn build",
+    "prepare": "yarn build:ts"
   },
   "keywords": [
     "nitro",

@@ -156,20 +156,20 @@ All cross-language communication uses JSON serialization. The Rust FFI layer han
 ## Build from source
 
 ```bash
-# Full release build
-yarn build:release
+# Full build (web + rust + codegen + typescript)
+yarn build
 
 # Or step by step:
+yarn build:web           # Download and compile WASM from upstream
 yarn build:rust          # Compile Rust FFI for iOS + Android
-yarn build:web-runtime   # Download and compile WASM from upstream
 yarn codegen             # Generate Nitro Modules native bindings
-yarn build               # TypeScript compilation
+yarn build:ts            # TypeScript compilation
 ```
 
 The web runtime is built from the pinned upstream ref in `package.json` (`config.montyUpstreamRef`, currently `v0.0.7`). Override for one-off builds:
 
 ```bash
-MONTY_UPSTREAM_REF=<tag-or-commit> yarn build:web-runtime
+MONTY_UPSTREAM_REF=<tag-or-commit> yarn build:web
 ```
 
 Platform-specific Rust builds:
