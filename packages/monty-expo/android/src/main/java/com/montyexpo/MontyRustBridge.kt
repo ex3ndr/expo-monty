@@ -1,6 +1,6 @@
-package expo.modules.montyexpo
+package com.montyexpo
 
-class MontyRustBridge {
+internal class MontyRustBridge {
   companion object {
     init {
       System.loadLibrary("monty_expo_ffi")

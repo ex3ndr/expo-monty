@@ -1,10 +1,11 @@
 {
   "name": "monty-expo",
   "version": "0.1.0",
-  "description": "Expo Modules bridge for Monty on iOS and Android",
+  "description": "Nitro Modules bridge for Monty on iOS and Android",
   "license": "MIT",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "react-native": "src/index.ts",
   "exports": {
     ".": {
       "types": "./build/index.d.ts",
@@ -15,42 +16,42 @@
   "files": [
     "android",
     "ios",
+    "cpp",
+    "nitrogen",
     "src",
     "build",
-    "expo-module.config.json",
-    "ios/MontyExpo.podspec",
+    "nitro.json",
+    "MontyExpo.podspec",
+    "post-script.js",
     "tsconfig.json"
   ],
   "scripts": {
-    "build": "expo-module build",
+    "build": "tsc -p tsconfig.json",
+    "codegen": "nitrogen --logLevel=\"debug\" && node post-script.js",
     "build:rust": "bash ./scripts/build-rust-all.sh",
     "build:rust:ios": "bash ./scripts/build-rust-ios.sh",
     "build:rust:android": "bash ./scripts/build-rust-android.sh",
-    "build:native": "yarn build:rust && expo-module build",
-    "clean": "expo-module clean",
-    "lint": "expo-module lint",
-    "test": "expo-module test",
-    "prepare": "expo-module build"
+    "build:native": "yarn build:rust && yarn codegen && yarn build",
+    "clean": "rm -rf build",
+    "prepare": "yarn build"
   },
   "keywords": [
-    "expo",
+    "nitro",
     "react-native",
     "monty",
     "python",
     "module"
   ],
-  "dependencies": {
-    "expo-modules-core": "^55.0.13"
-  },
   "devDependencies": {
-    "expo": "^55.0.3",
-    "expo-module-scripts": "^55.0.2",
+    "nitrogen": "0.35.0",
+    "react": "19.2.0",
     "react-native": "0.82.1",
+    "react-native-nitro-modules": "0.35.0",
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "expo": "*",
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-nitro-modules": "*"
   }
 }
