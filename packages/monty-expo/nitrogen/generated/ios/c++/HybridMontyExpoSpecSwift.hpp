@@ -90,6 +90,22 @@ namespace margelo::nitro::montyexpo {
       auto __value = std::move(__result.value());
       return __value;
     }
+    inline std::string startSync(const std::string& code, const std::string& runOptionsJson, const std::string& montyOptionsJson) override {
+      auto __result = _swiftPart.startSync(code, runOptionsJson, montyOptionsJson);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
+    inline std::string resumeSync(const std::string& snapshotId, const std::string& resumeOptionsJson) override {
+      auto __result = _swiftPart.resumeSync(snapshotId, resumeOptionsJson);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
 
   private:
     MontyExpo::HybridMontyExpoSpec_cxx _swiftPart;

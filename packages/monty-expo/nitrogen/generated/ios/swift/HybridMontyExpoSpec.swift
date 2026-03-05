@@ -16,6 +16,8 @@ public protocol HybridMontyExpoSpec_protocol: HybridObject {
   func version() throws -> String
   func isNativeRuntimeLinked() throws -> Bool
   func runSync(code: String, runOptionsJson: String, montyOptionsJson: String) throws -> String
+  func startSync(code: String, runOptionsJson: String, montyOptionsJson: String) throws -> String
+  func resumeSync(snapshotId: String, resumeOptionsJson: String) throws -> String
 }
 
 public extension HybridMontyExpoSpec_protocol {

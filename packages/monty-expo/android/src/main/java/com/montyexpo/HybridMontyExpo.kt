@@ -24,4 +24,27 @@ class HybridMontyExpo : HybridMontyExpoSpec() {
       "{\"ok\":false,\"error\":{\"typeName\":\"RuntimeError\",\"message\":\"$message\",\"traceback\":[]}}"
     }
   }
+
+  override fun startSync(code: String, runOptionsJson: String, montyOptionsJson: String): String {
+    val normalizedRunOptions = runOptionsJson.takeIf { it.isNotBlank() && it != "null" }
+    val normalizedMontyOptions = montyOptionsJson.takeIf { it.isNotBlank() && it != "null" }
+
+    return try {
+      MontyRustBridge.nativeStart(code, normalizedRunOptions, normalizedMontyOptions)
+    } catch (error: Throwable) {
+      val message = (error.message ?: "Rust bridge call failed").replace("\"", "\\\"")
+      "{\"ok\":false,\"error\":{\"typeName\":\"RuntimeError\",\"message\":\"$message\",\"traceback\":[]}}"
+    }
+  }
+
+  override fun resumeSync(snapshotId: String, resumeOptionsJson: String): String {
+    val normalizedResumeOptions = resumeOptionsJson.takeIf { it.isNotBlank() && it != "null" }
+
+    return try {
+      MontyRustBridge.nativeResume(snapshotId, normalizedResumeOptions)
+    } catch (error: Throwable) {
+      val message = (error.message ?: "Rust bridge call failed").replace("\"", "\\\"")
+      "{\"ok\":false,\"error\":{\"typeName\":\"RuntimeError\",\"message\":\"$message\",\"traceback\":[]}}"
+    }
+  }
 }

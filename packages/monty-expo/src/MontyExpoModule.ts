@@ -1,14 +1,29 @@
 import { NitroModules } from "react-native-nitro-modules";
 import type { MontyExpo as MontyExpoSpec } from "./specs/monty-expo.nitro";
-import type { MontyOptions, NativeMontyResult, RunOptions } from "./MontyExpo.types";
+import type {
+    MontyOptions,
+    NativeMontyProgressResult,
+    NativeMontyResult,
+    RunOptions
+} from "./MontyExpo.types";
 
 export type NativeMontyExpoModuleType = {
     version(): string;
     isNativeRuntimeLinked(): boolean;
     runSync(code: string, options?: RunOptions, montyOptions?: MontyOptions): NativeMontyResult;
+    startSync(code: string, options?: RunOptions, montyOptions?: MontyOptions): NativeMontyProgressResult;
+    resumeSync(snapshotId: string, options?: unknown): NativeMontyProgressResult;
 };
 
 const FALLBACK_ERROR: NativeMontyResult = {
+    ok: false,
+    error: {
+        typeName: "RuntimeError",
+        message: "Monty Nitro runtime is not linked."
+    }
+};
+
+const FALLBACK_PROGRESS_ERROR: NativeMontyProgressResult = {
     ok: false,
     error: {
         typeName: "RuntimeError",
@@ -36,6 +51,18 @@ function parseNativeResult(raw: string): NativeMontyResult {
     }
 }
 
+function parseNativeProgressResult(raw: string): NativeMontyProgressResult {
+    try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object" && "ok" in parsed) {
+            return parsed as NativeMontyProgressResult;
+        }
+        return FALLBACK_PROGRESS_ERROR;
+    } catch (_error) {
+        return FALLBACK_PROGRESS_ERROR;
+    }
+}
+
 const NativeMontyExpoNitro = NitroModules.createHybridObject<MontyExpoSpec>("MontyExpo");
 
 const NativeMontyExpoModule: NativeMontyExpoModuleType = {
@@ -49,6 +76,34 @@ const NativeMontyExpoModule: NativeMontyExpoModuleType = {
         try {
             const raw = NativeMontyExpoNitro.runSync(code, safeStringify(options), safeStringify(montyOptions));
             return parseNativeResult(raw);
+        } catch (error) {
+            return {
+                ok: false,
+                error: {
+                    typeName: "RuntimeError",
+                    message: error instanceof Error ? error.message : "Nitro module call failed."
+                }
+            };
+        }
+    },
+    startSync(code: string, options?: RunOptions, montyOptions?: MontyOptions): NativeMontyProgressResult {
+        try {
+            const raw = NativeMontyExpoNitro.startSync(code, safeStringify(options), safeStringify(montyOptions));
+            return parseNativeProgressResult(raw);
+        } catch (error) {
+            return {
+                ok: false,
+                error: {
+                    typeName: "RuntimeError",
+                    message: error instanceof Error ? error.message : "Nitro module call failed."
+                }
+            };
+        }
+    },
+    resumeSync(snapshotId: string, options?: unknown): NativeMontyProgressResult {
+        try {
+            const raw = NativeMontyExpoNitro.resumeSync(snapshotId, safeStringify(options));
+            return parseNativeProgressResult(raw);
         } catch (error) {
             return {
                 ok: false,

@@ -51,6 +51,8 @@ namespace margelo::nitro::montyexpo {
       virtual std::string version() = 0;
       virtual bool isNativeRuntimeLinked() = 0;
       virtual std::string runSync(const std::string& code, const std::string& runOptionsJson, const std::string& montyOptionsJson) = 0;
+      virtual std::string startSync(const std::string& code, const std::string& runOptionsJson, const std::string& montyOptionsJson) = 0;
+      virtual std::string resumeSync(const std::string& snapshotId, const std::string& resumeOptionsJson) = 0;
 
     protected:
       // Hybrid Setup

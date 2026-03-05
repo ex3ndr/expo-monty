@@ -17,6 +17,8 @@ namespace margelo::nitro::montyexpo {
       prototype.registerHybridMethod("version", &HybridMontyExpoSpec::version);
       prototype.registerHybridMethod("isNativeRuntimeLinked", &HybridMontyExpoSpec::isNativeRuntimeLinked);
       prototype.registerHybridMethod("runSync", &HybridMontyExpoSpec::runSync);
+      prototype.registerHybridMethod("startSync", &HybridMontyExpoSpec::startSync);
+      prototype.registerHybridMethod("resumeSync", &HybridMontyExpoSpec::resumeSync);
     });
   }
 

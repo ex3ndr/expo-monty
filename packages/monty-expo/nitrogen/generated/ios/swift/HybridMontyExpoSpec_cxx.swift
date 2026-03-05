@@ -159,4 +159,28 @@ open class HybridMontyExpoSpec_cxx {
       return bridge.create_Result_std__string_(__exceptionPtr)
     }
   }
+  
+  @inline(__always)
+  public final func startSync(code: std.string, runOptionsJson: std.string, montyOptionsJson: std.string) -> bridge.Result_std__string_ {
+    do {
+      let __result = try self.__implementation.startSync(code: String(code), runOptionsJson: String(runOptionsJson), montyOptionsJson: String(montyOptionsJson))
+      let __resultCpp = std.string(__result)
+      return bridge.create_Result_std__string_(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__string_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
+  public final func resumeSync(snapshotId: std.string, resumeOptionsJson: std.string) -> bridge.Result_std__string_ {
+    do {
+      let __result = try self.__implementation.resumeSync(snapshotId: String(snapshotId), resumeOptionsJson: String(resumeOptionsJson))
+      let __resultCpp = std.string(__result)
+      return bridge.create_Result_std__string_(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_std__string_(__exceptionPtr)
+    }
+  }
 }

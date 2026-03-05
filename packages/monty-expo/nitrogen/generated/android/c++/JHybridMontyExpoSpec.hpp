@@ -57,6 +57,8 @@ namespace margelo::nitro::montyexpo {
     std::string version() override;
     bool isNativeRuntimeLinked() override;
     std::string runSync(const std::string& code, const std::string& runOptionsJson, const std::string& montyOptionsJson) override;
+    std::string startSync(const std::string& code, const std::string& runOptionsJson, const std::string& montyOptionsJson) override;
+    std::string resumeSync(const std::string& snapshotId, const std::string& resumeOptionsJson) override;
 
   private:
     jni::global_ref<JHybridMontyExpoSpec::JavaPart> _javaPart;

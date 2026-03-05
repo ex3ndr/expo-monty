@@ -1,11 +1,11 @@
 import NativeMontyExpoModule from "./MontyExpoModule";
 import type {
     ExceptionInfo,
+    ExceptionInput,
     Frame,
     JsMontyObject,
     MontyOptions,
-    NameLookupLoadOptions,
-    NameLookupResumeOptions,
+    NativeMontyProgressResult,
     ResourceLimits,
     ResumeOptions,
     RunMontyAsyncOptions,
@@ -21,8 +21,6 @@ export type {
     Frame,
     JsMontyObject,
     MontyOptions,
-    NameLookupLoadOptions,
-    NameLookupResumeOptions,
     ResourceLimits,
     ResumeOptions,
     RunMontyAsyncOptions,
@@ -33,6 +31,8 @@ export type {
 } from "./MontyExpo.types";
 
 export type JsResourceLimits = ResourceLimits;
+
+type ExternalFunctionsMap = Record<string, unknown>;
 
 export class MontyError extends Error {
     protected _typeName: string;
@@ -122,24 +122,48 @@ export class MontyComplete {
 }
 
 export class MontySnapshot {
+    private _snapshotId: string;
+    private _scriptName: string;
+    private _functionName: string;
+    private _args: JsMontyObject[];
+    private _kwargs: Record<string, JsMontyObject>;
+    private _externalFunctions: ExternalFunctionsMap;
+
+    constructor(
+        snapshotId: string,
+        scriptName: string,
+        functionName: string,
+        args: JsMontyObject[],
+        kwargs: Record<string, JsMontyObject>,
+        externalFunctions: ExternalFunctionsMap
+    ) {
+        this._snapshotId = snapshotId;
+        this._scriptName = scriptName;
+        this._functionName = functionName;
+        this._args = args;
+        this._kwargs = kwargs;
+        this._externalFunctions = externalFunctions;
+    }
+
     get scriptName(): string {
-        throw new MontyRuntimeError("NotImplementedError", "MontySnapshot is not implemented on mobile yet.");
+        return this._scriptName;
     }
 
     get functionName(): string {
-        throw new MontyRuntimeError("NotImplementedError", "MontySnapshot is not implemented on mobile yet.");
+        return this._functionName;
     }
 
     get args(): JsMontyObject[] {
-        throw new MontyRuntimeError("NotImplementedError", "MontySnapshot is not implemented on mobile yet.");
+        return this._args;
     }
 
     get kwargs(): Record<string, JsMontyObject> {
-        throw new MontyRuntimeError("NotImplementedError", "MontySnapshot is not implemented on mobile yet.");
+        return this._kwargs;
     }
 
-    resume(_options: ResumeOptions): MontySnapshot | MontyNameLookup | MontyComplete {
-        throw new MontyRuntimeError("NotImplementedError", "MontySnapshot.resume is not implemented on mobile yet.");
+    resume(options: ResumeOptions = {}): MontySnapshot | MontyComplete {
+        const result = NativeMontyExpoModule.resumeSync(this._snapshotId, options);
+        return progressFromNative(result, this._externalFunctions);
     }
 
     dump(): Uint8Array {
@@ -151,33 +175,7 @@ export class MontySnapshot {
     }
 
     repr(): string {
-        return "MontySnapshot(<not-implemented>)";
-    }
-}
-
-export class MontyNameLookup {
-    get scriptName(): string {
-        throw new MontyRuntimeError("NotImplementedError", "MontyNameLookup is not implemented on mobile yet.");
-    }
-
-    get variableName(): string {
-        throw new MontyRuntimeError("NotImplementedError", "MontyNameLookup is not implemented on mobile yet.");
-    }
-
-    resume(_options?: NameLookupResumeOptions): MontySnapshot | MontyNameLookup | MontyComplete {
-        throw new MontyRuntimeError("NotImplementedError", "MontyNameLookup.resume is not implemented on mobile yet.");
-    }
-
-    dump(): Uint8Array {
-        throw new MontyRuntimeError("NotImplementedError", "MontyNameLookup.dump is not implemented on mobile yet.");
-    }
-
-    static load(_data: Uint8Array, _options?: NameLookupLoadOptions): MontyNameLookup {
-        throw new MontyRuntimeError("NotImplementedError", "MontyNameLookup.load is not implemented on mobile yet.");
-    }
-
-    repr(): string {
-        return "MontyNameLookup(<not-implemented>)";
+        return `MontySnapshot(scriptName=${this._scriptName}, functionName=${this._functionName})`;
     }
 }
 
@@ -221,23 +219,21 @@ export class Monty {
         // linkage is added. The wrapper keeps API compatibility for callers now.
     }
 
-    run(options?: RunOptions): JsMontyObject {
-        const result = NativeMontyExpoModule.runSync(this._code, options, this._options);
-        if (result.ok) {
-            return result.output;
+    run(options: RunOptions = {}): JsMontyObject {
+        const externalFunctions = options.externalFunctions ?? {};
+        let progress = this.start(options);
+
+        while (!(progress instanceof MontyComplete)) {
+            progress = resumeFunctionCallSync(progress, externalFunctions);
         }
-        const typeName = result.error.typeName;
-        if (typeName === "SyntaxError") {
-            throw new MontySyntaxError(result.error.message);
-        }
-        throw new MontyRuntimeError(typeName, result.error.message, result.error.traceback ?? []);
+
+        return progress.output;
     }
 
-    start(_options?: StartOptions): MontySnapshot | MontyNameLookup | MontyComplete {
-        throw new MontyRuntimeError(
-            "NotImplementedError",
-            "Monty.start is not implemented on mobile yet. Use run() for now."
-        );
+    start(options: StartOptions = {}): MontySnapshot | MontyComplete {
+        const externalFunctions = options.externalFunctions ?? {};
+        const result = NativeMontyExpoModule.startSync(this._code, options, this._options);
+        return progressFromNative(result, externalFunctions);
     }
 
     dump(): Uint8Array {
@@ -262,7 +258,14 @@ export class Monty {
 }
 
 export async function runMontyAsync(montyRunner: Monty, options: RunMontyAsyncOptions = {}): Promise<JsMontyObject> {
-    return montyRunner.run(options);
+    const externalFunctions = options.externalFunctions ?? {};
+    let progress = montyRunner.start(options);
+
+    while (!(progress instanceof MontyComplete)) {
+        progress = await resumeFunctionCallAsync(progress, externalFunctions);
+    }
+
+    return progress.output;
 }
 
 export function montyExpoVersion(): string {
@@ -271,4 +274,169 @@ export function montyExpoVersion(): string {
 
 export function montyExpoNativeRuntimeLinked(): boolean {
     return NativeMontyExpoModule.isNativeRuntimeLinked();
+}
+
+function progressFromNative(result: NativeMontyProgressResult, externalFunctions: ExternalFunctionsMap): MontySnapshot | MontyComplete {
+    let current = result;
+
+    for (let i = 0; i < 128; i += 1) {
+        if (!current.ok) {
+            throwNativeError(current.error);
+        }
+
+        if (current.state !== "nameLookup") {
+            break;
+        }
+
+        current = resolveNameLookup(current.snapshotId, current.variableName, externalFunctions);
+    }
+
+    if (!current.ok) {
+        throwNativeError(current.error);
+    }
+
+    if (current.state === "complete") {
+        return new MontyComplete(current.output);
+    }
+
+    if (current.state === "functionCall") {
+        return new MontySnapshot(
+            current.snapshotId,
+            current.scriptName,
+            current.functionName,
+            current.args,
+            current.kwargs,
+            externalFunctions
+        );
+    }
+
+    throw new MontyRuntimeError(
+        "RuntimeError",
+        "Monty runtime returned too many chained name lookups while resolving external bindings."
+    );
+}
+
+function resolveNameLookup(
+    snapshotId: string,
+    variableName: string,
+    externalFunctions: ExternalFunctionsMap
+): NativeMontyProgressResult {
+    if (Object.prototype.hasOwnProperty.call(externalFunctions, variableName)) {
+        const candidate = externalFunctions[variableName];
+        if (typeof candidate === "function") {
+            return NativeMontyExpoModule.resumeSync(snapshotId, {
+                value: {
+                    $function: {
+                        name: variableName,
+                        docstring: null
+                    }
+                }
+            });
+        }
+        return NativeMontyExpoModule.resumeSync(snapshotId, {
+            value: candidate
+        });
+    }
+
+    return NativeMontyExpoModule.resumeSync(snapshotId, {});
+}
+
+function resumeFunctionCallSync(snapshot: MontySnapshot, externalFunctions: ExternalFunctionsMap): MontySnapshot | MontyComplete {
+    const external = externalFunctions[snapshot.functionName];
+    if (typeof external !== "function") {
+        return snapshot.resume({
+            exception: {
+                type: "NameError",
+                message: `name '${snapshot.functionName}' is not defined`
+            }
+        });
+    }
+
+    try {
+        const result = invokeExternalFunction(external, snapshot.args, snapshot.kwargs);
+        if (isPromiseLike(result)) {
+            return snapshot.resume({
+                exception: {
+                    type: "TypeError",
+                    message: `External function '${snapshot.functionName}' returned a Promise in run(). Use runMontyAsync().`
+                }
+            });
+        }
+        return snapshot.resume({
+            returnValue: result
+        });
+    } catch (error) {
+        return snapshot.resume({
+            exception: exceptionFromUnknown(error)
+        });
+    }
+}
+
+async function resumeFunctionCallAsync(
+    snapshot: MontySnapshot,
+    externalFunctions: ExternalFunctionsMap
+): Promise<MontySnapshot | MontyComplete> {
+    const external = externalFunctions[snapshot.functionName];
+    if (typeof external !== "function") {
+        return snapshot.resume({
+            exception: {
+                type: "NameError",
+                message: `name '${snapshot.functionName}' is not defined`
+            }
+        });
+    }
+
+    try {
+        const result = await Promise.resolve(invokeExternalFunction(external, snapshot.args, snapshot.kwargs));
+        return snapshot.resume({
+            returnValue: result
+        });
+    } catch (error) {
+        return snapshot.resume({
+            exception: exceptionFromUnknown(error)
+        });
+    }
+}
+
+function invokeExternalFunction(
+    external: Function,
+    args: JsMontyObject[],
+    kwargs: Record<string, JsMontyObject>
+): unknown {
+    if (Object.keys(kwargs).length > 0) {
+        return external(...args, kwargs);
+    }
+    return external(...args);
+}
+
+function isPromiseLike(value: unknown): value is Promise<unknown> {
+    return typeof value === "object" && value !== null && "then" in value && typeof value.then === "function";
+}
+
+function exceptionFromUnknown(error: unknown): ExceptionInput {
+    if (error instanceof MontyError) {
+        return {
+            type: error.exception.typeName,
+            message: error.exception.message
+        };
+    }
+
+    if (error instanceof Error) {
+        return {
+            type: error.name || "RuntimeError",
+            message: error.message
+        };
+    }
+
+    return {
+        type: "RuntimeError",
+        message: String(error)
+    };
+}
+
+function throwNativeError(error: ExceptionInfo & { traceback?: Frame[] }): never {
+    if (error.typeName === "SyntaxError") {
+        throw new MontySyntaxError(error.message);
+    }
+    throw new MontyRuntimeError(error.typeName, error.message, error.traceback ?? []);
 }

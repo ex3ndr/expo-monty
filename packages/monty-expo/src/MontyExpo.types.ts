@@ -61,6 +61,7 @@ export interface RunMontyAsyncOptions {
 export interface StartOptions {
     inputs?: Record<string, unknown>;
     limits?: ResourceLimits;
+    externalFunctions?: Record<string, unknown>;
 }
 
 export interface ResumeOptions {
@@ -84,6 +85,35 @@ export type NativeMontyResult =
     | {
           ok: true;
           output: JsMontyObject;
+      }
+    | {
+          ok: false;
+          error: ExceptionInfo & {
+              traceback?: Frame[];
+          };
+      };
+
+export type NativeMontyProgressResult =
+    | {
+          ok: true;
+          state: "complete";
+          output: JsMontyObject;
+      }
+    | {
+          ok: true;
+          state: "functionCall";
+          snapshotId: string;
+          scriptName: string;
+          functionName: string;
+          args: JsMontyObject[];
+          kwargs: Record<string, JsMontyObject>;
+      }
+    | {
+          ok: true;
+          state: "nameLookup";
+          snapshotId: string;
+          scriptName: string;
+          variableName: string;
       }
     | {
           ok: false;

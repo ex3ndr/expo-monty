@@ -59,5 +59,15 @@ namespace margelo::nitro::montyexpo {
     auto __result = method(_javaPart, jni::make_jstring(code), jni::make_jstring(runOptionsJson), jni::make_jstring(montyOptionsJson));
     return __result->toStdString();
   }
+  std::string JHybridMontyExpoSpec::startSync(const std::string& code, const std::string& runOptionsJson, const std::string& montyOptionsJson) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>(jni::alias_ref<jni::JString> /* code */, jni::alias_ref<jni::JString> /* runOptionsJson */, jni::alias_ref<jni::JString> /* montyOptionsJson */)>("startSync");
+    auto __result = method(_javaPart, jni::make_jstring(code), jni::make_jstring(runOptionsJson), jni::make_jstring(montyOptionsJson));
+    return __result->toStdString();
+  }
+  std::string JHybridMontyExpoSpec::resumeSync(const std::string& snapshotId, const std::string& resumeOptionsJson) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<jni::JString>(jni::alias_ref<jni::JString> /* snapshotId */, jni::alias_ref<jni::JString> /* resumeOptionsJson */)>("resumeSync");
+    auto __result = method(_javaPart, jni::make_jstring(snapshotId), jni::make_jstring(resumeOptionsJson));
+    return __result->toStdString();
+  }
 
 } // namespace margelo::nitro::montyexpo

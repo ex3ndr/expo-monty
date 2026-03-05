@@ -39,6 +39,14 @@ abstract class HybridMontyExpoSpec: HybridObject() {
   @DoNotStrip
   @Keep
   abstract fun runSync(code: String, runOptionsJson: String, montyOptionsJson: String): String
+  
+  @DoNotStrip
+  @Keep
+  abstract fun startSync(code: String, runOptionsJson: String, montyOptionsJson: String): String
+  
+  @DoNotStrip
+  @Keep
+  abstract fun resumeSync(snapshotId: String, resumeOptionsJson: String): String
 
   // Default implementation of `HybridObject.toString()`
   override fun toString(): String {
