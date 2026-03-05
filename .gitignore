@@ -2,10 +2,9 @@ node_modules
 yarn-error.log
 .context
 
-expo-monty/node_modules
-expo-monty/.cache
-expo-monty/dist
-expo-monty/build
-expo-monty/native/monty-expo-ffi/target
-expo-monty/ios/rust
-expo-monty/android/src/main/jniLibs
+.cache
+dist
+build
+native/monty-expo-ffi/target
+ios/rust
+android/src/main/jniLibs

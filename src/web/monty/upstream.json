@@ -1,5 +1,5 @@
 {
   "repository": "https://github.com/pydantic/monty.git",
-  "ref": "main",
-  "commit": "bf7c7ef4262055f2b55ab75bf1fe83d2ace674f2"
+  "ref": "v0.0.7",
+  "commit": "24dad053ac36cef25951370001c57a5c5bc5a64d"
 }

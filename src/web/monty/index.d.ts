@@ -32,26 +32,20 @@ export declare class Monty {
   /**
    * Executes the code and returns the result, or an exception object if execution fails.
    *
-   * If runtime `externalFunctions` are provided, the start/resume loop is used
-   * to dispatch external function calls and name lookups. Otherwise, code is
-   * executed directly.
-   *
    * @param options - Execution options (inputs, limits, externalFunctions)
    * @returns The result of the last expression, or a MontyException if execution fails
    */
   run(options?: RunOptions | undefined | null): JsMontyObject | MontyException
   /**
-   * Starts execution and returns a snapshot (paused at external call or name lookup),
-   * completion, or error.
+   * Starts execution and returns either a snapshot (paused at external call), completion, or error.
    *
    * This method enables iterative execution where code pauses at external function
-   * calls or name lookups, allowing the host to provide return values before resuming.
+   * calls, allowing the host to provide return values or exceptions before resuming.
    *
    * @param options - Execution options (inputs, limits)
-   * @returns MontySnapshot if paused at function call, MontyNameLookup if paused at
-   *   name lookup, MontyComplete if done, or MontyException if failed
+   * @returns MontySnapshot if paused, MontyComplete if done, or MontyException if failed
    */
-  start(options?: StartOptions | undefined | null): MontySnapshot | MontyNameLookup | MontyComplete | MontyException
+  start(options?: StartOptions | undefined | null): MontySnapshot | MontyComplete | MontyException
   /**
    * Serializes the Monty instance to a binary format.
    *
@@ -72,6 +66,8 @@ export declare class Monty {
   get scriptName(): string
   /** Returns the input variable names. */
   get inputs(): Array<string>
+  /** Returns the external function names. */
+  get externalFunctions(): Array<string>
   /** Returns a string representation of the Monty instance. */
   repr(): string
 }
@@ -127,49 +123,6 @@ export declare class MontyException {
 export type JsMontyException = MontyException
 
 /**
- * Represents paused execution waiting for a name to be resolved.
- *
- * The host should check if the variable name corresponds to a known value
- * (e.g., an external function). Call `resume()` with the value to continue
- * execution, or call `resume()` with no value to raise `NameError`.
- */
-export declare class MontyNameLookup {
-  /** Returns the name of the script being executed. */
-  get scriptName(): string
-  /** Returns the name of the variable being looked up. */
-  get variableName(): string
-  /**
-   * Resumes execution after resolving the name lookup.
-   *
-   * If `value` is provided, the name resolves to that value and execution continues.
-   * If `value` is omitted or undefined, the VM raises a `NameError`.
-   *
-   * @param options - Optional object with `value` to resolve the name to
-   * @returns MontySnapshot if paused at function call, MontyNameLookup if paused at
-   *   another name lookup, MontyComplete if done, or MontyException if failed
-   */
-  resume(options?: NameLookupResumeOptions | undefined | null): MontySnapshot | Self | MontyComplete | MontyException
-  /**
-   * Serializes the MontyNameLookup to a binary format.
-   *
-   * The serialized data can be stored and later restored with `MontyNameLookup.load()`.
-   *
-   * @returns Buffer containing the serialized name lookup snapshot
-   */
-  dump(): Buffer
-  /**
-   * Deserializes a MontyNameLookup from binary format.
-   *
-   * @param data - The serialized data from `dump()`
-   * @param options - Optional load options
-   * @returns A new MontyNameLookup instance
-   */
-  static load(data: Buffer, options?: NameLookupLoadOptions | undefined | null): MontyNameLookup
-  /** Returns a string representation of the MontyNameLookup. */
-  repr(): string
-}
-
-/**
  * Stateful no-replay REPL session.
  *
  * Each call to `feed()` compiles and executes only the provided snippet against
@@ -221,10 +174,9 @@ export declare class MontySnapshot {
    * Exactly one of `returnValue` or `exception` must be provided.
    *
    * @param options - Object with either `returnValue` or `exception`
-   * @returns MontySnapshot if paused at function call, MontyNameLookup if paused at
-   *   name lookup, MontyComplete if done, or MontyException if failed
+   * @returns MontySnapshot if paused, MontyComplete if done, or MontyException if failed
    */
-  resume(options: ResumeOptions): Self | MontyNameLookup | MontyComplete | MontyException
+  resume(options: ResumeOptions): Self | MontyComplete | MontyException
   /**
    * Serializes the MontySnapshot to a binary format.
    *
@@ -327,27 +279,12 @@ export interface MontyOptions {
   scriptName?: string
   /** List of input variable names available in the code. */
   inputs?: Array<string>
+  /** List of external function names the code can call. */
+  externalFunctions?: Array<string>
   /** Whether to perform type checking on the code. Default: false */
   typeCheck?: boolean
   /** Optional code to prepend before type checking. */
   typeCheckPrefixCode?: string
-}
-
-/** Options for loading a serialized name lookup snapshot. */
-export interface NameLookupLoadOptions {
-  /** Optional print callback function. */
-  printCallback?: JsPrintCallback
-}
-
-/**
- * Options for resuming execution from a name lookup.
- *
- * If `value` is provided, the name resolves to that value and execution continues.
- * If `value` is omitted or undefined, the VM raises a `NameError`.
- */
-export interface NameLookupResumeOptions {
-  /** The value to provide for the name. */
-  value?: unknown
 }
 
 /**
