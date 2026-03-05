@@ -1,4 +1,4 @@
-# monty-expo
+# expo-monty
 
 Nitro Modules implementation for iOS, Android, and web.
 
@@ -19,7 +19,7 @@ Web fallback uses an embedded WASM runtime through the same `runSync/startSync/r
 ## External function example
 
 ```ts
-import { loadMonty, Monty } from "monty-expo";
+import { loadMonty, Monty } from "expo-monty";
 
 await loadMonty();
 
@@ -44,15 +44,15 @@ const output = monty.run({
 ## Build
 
 ```bash
-yarn workspace monty-expo build:rust
-yarn workspace monty-expo build:web-runtime
-yarn workspace monty-expo codegen
-yarn workspace monty-expo build
+yarn workspace expo-monty build:rust
+yarn workspace expo-monty build:web-runtime
+yarn workspace expo-monty codegen
+yarn workspace expo-monty build
 ```
 
 Platform-specific rust builds:
 
 ```bash
-yarn workspace monty-expo build:rust:ios
-yarn workspace monty-expo build:rust:android
+yarn workspace expo-monty build:rust:ios
+yarn workspace expo-monty build:rust:android
 ```

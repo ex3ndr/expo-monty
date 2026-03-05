@@ -5,7 +5,7 @@
   "packageManager": "yarn@1.22.22",
   "workspaces": {
     "packages": [
-      "packages/*"
+      "expo-monty"
     ],
     "nohoist": [
       "**/react",
@@ -16,8 +16,8 @@
   },
   "scripts": {
     "build": "yarn build:web && yarn build:expo",
-    "build:expo": "yarn workspace monty-expo build",
-    "build:web": "yarn workspace monty-expo build:web-runtime",
+    "build:expo": "yarn workspace expo-monty build",
+    "build:web": "yarn workspace expo-monty build:web-runtime",
     "clean": "yarn workspaces run clean"
   }
 }

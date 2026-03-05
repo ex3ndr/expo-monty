@@ -7,7 +7,7 @@ import {
   MontyRuntimeError,
   montyExpoNativeRuntimeLinked,
   montyExpoVersion,
-} from "monty-expo";
+} from "expo-monty";
 
 type ProbeResult =
   | {
@@ -90,23 +90,23 @@ export default function App() {
 
     const run = async () => {
       try {
-        console.log("[monty-expo example] loading Monty runtime");
+        console.log("[expo-monty example] loading Monty runtime");
         await loadMonty();
-        console.log("[monty-expo example] Monty runtime loaded");
+        console.log("[expo-monty example] Monty runtime loaded");
 
         if (!mounted) {
           return;
         }
 
-        console.log("[monty-expo example] running basic probe");
+        console.log("[expo-monty example] running basic probe");
         const nextProbe = runBasicProbe();
-        console.log("[monty-expo example] running external probe");
+        console.log("[expo-monty example] running external probe");
         const nextExternalProbe = runExternalProbe();
 
         setProbe(nextProbe);
         setExternalFunctionProbe(nextExternalProbe);
       } catch (error) {
-        console.log("[monty-expo example] load failed", error);
+        console.log("[expo-monty example] load failed", error);
         if (mounted) {
           setLoadError(formatError(error));
         }
@@ -126,7 +126,7 @@ export default function App() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>monty-expo native check</Text>
+      <Text style={styles.title}>expo-monty native check</Text>
       <Text style={styles.line}>native linked: {String(montyExpoNativeRuntimeLinked())}</Text>
       <Text style={styles.line}>module version: {montyExpoVersion()}</Text>
       <Text style={styles.line}>runtime loaded: {loading ? "loading" : loadError ? "error" : "ready"}</Text>

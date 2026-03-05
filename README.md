@@ -2,7 +2,7 @@
 
 Yarn workspace monorepo for Monty JS packages:
 
-- `monty-expo`: Nitro Modules package for iOS/Android native bridge with embedded web/WASM runtime.
+- `expo-monty`: Nitro Modules package for iOS/Android native bridge with embedded web/WASM runtime.
 
 ## Quick Start
 

@@ -1,5 +1,5 @@
 {
-  "name": "monty-expo",
+  "name": "expo-monty",
   "version": "0.1.0",
   "description": "Nitro Modules bridge for Monty on iOS, Android, and web",
   "license": "MIT",
