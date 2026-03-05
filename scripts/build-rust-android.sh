@@ -15,9 +15,8 @@ if [ -z "${ANDROID_NDK_HOME:-}" ]; then
   elif [ -n "${ANDROID_SDK_ROOT:-}" ] && [ -d "$ANDROID_SDK_ROOT/ndk" ]; then
     export ANDROID_NDK_HOME="$ANDROID_SDK_ROOT/ndk/$(ls "$ANDROID_SDK_ROOT/ndk" | sort -V | tail -n 1)"
   else
-    # Auto-detect Android Studio SDK on macOS
-    for STUDIO_APP in "$HOME/Applications/Android Studio.app" "/Applications/Android Studio.app"; do
-      SDK_DIR="$STUDIO_APP/Contents/sdk"
+    # Auto-detect Android SDK on macOS
+    for SDK_DIR in "$HOME/Library/Android/sdk" "$HOME/Applications/Android Studio.app/Contents/sdk" "/Applications/Android Studio.app/Contents/sdk"; do
       if [ -d "$SDK_DIR/ndk" ]; then
         export ANDROID_NDK_HOME="$SDK_DIR/ndk/$(ls "$SDK_DIR/ndk" | sort -V | tail -n 1)"
         break

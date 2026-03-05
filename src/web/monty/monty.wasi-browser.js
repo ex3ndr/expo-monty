@@ -24,7 +24,6 @@ export let Monty
 export let MontyComplete
 export let MontyException
 export let JsMontyException
-export let MontyNameLookup
 export let MontyRepl
 export let MontySnapshot
 export let MontyTypingError
@@ -60,7 +59,6 @@ function __assignExports() {
   MontyComplete = __napiModule.exports.MontyComplete
   MontyException = __napiModule.exports.MontyException
   JsMontyException = __napiModule.exports.JsMontyException
-  MontyNameLookup = __napiModule.exports.MontyNameLookup
   MontyRepl = __napiModule.exports.MontyRepl
   MontySnapshot = __napiModule.exports.MontySnapshot
   MontyTypingError = __napiModule.exports.MontyTypingError

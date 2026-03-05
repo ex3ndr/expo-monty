@@ -10,13 +10,13 @@ import type {
 import type { NativeMontyExpoModuleType } from "./MontyExpoModule";
 
 type WebRuntimeModule = typeof import("./web/monty/wrapper");
-type WebProgressState = import("./web/monty/wrapper").MontySnapshot | import("./web/monty/wrapper").MontyNameLookup;
-type WebProgressResult = WebProgressState | import("./web/monty/wrapper").MontyComplete;
+type WebSnapshot = import("./web/monty/wrapper").MontySnapshot;
+type WebProgressResult = WebSnapshot | import("./web/monty/wrapper").MontyComplete;
 type NativeErrorPayload = Extract<NativeMontyResult, { ok: false }>["error"];
 
 type StoredState = {
     scriptName: string;
-    state: WebProgressState;
+    state: WebSnapshot;
 };
 
 const snapshotStore = new Map<string, StoredState>();
@@ -178,24 +178,14 @@ function mapProgressResult(
         state: progress
     });
 
-    if (progress instanceof runtime.MontySnapshot) {
-        return {
-            ok: true,
-            state: "functionCall",
-            snapshotId,
-            scriptName,
-            functionName: progress.functionName,
-            args: progress.args,
-            kwargs: progress.kwargs
-        };
-    }
-
     return {
         ok: true,
-        state: "nameLookup",
+        state: "functionCall",
         snapshotId,
         scriptName,
-        variableName: progress.variableName
+        functionName: progress.functionName,
+        args: progress.args,
+        kwargs: progress.kwargs as Record<string, unknown>
     };
 }
 
@@ -246,10 +236,7 @@ const MontyExpoModule: NativeMontyExpoModuleType = {
         try {
             runtime = getWebRuntimeModule();
             const resumeOptions = normalizeResumeOptions(options);
-            const nextProgress =
-                snapshot.state instanceof runtime.MontySnapshot
-                    ? snapshot.state.resume(resumeOptions as ResumeOptions)
-                    : snapshot.state.resume(resumeOptions as { value?: unknown });
+            const nextProgress = snapshot.state.resume(resumeOptions as ResumeOptions);
             return mapProgressResult(nextProgress, snapshot.scriptName, runtime);
         } catch (error) {
             return toNativeProgressError(error, runtime);
