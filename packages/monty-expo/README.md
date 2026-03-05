@@ -1,8 +1,8 @@
 # monty-expo
 
-Nitro Modules implementation for iOS and Android.
+Nitro Modules implementation for iOS, Android, and web.
 
-This package provides a native Nitro module bridge and a TypeScript API aligned with `monty-web`.
+This package provides a native Nitro module bridge and a TypeScript API for all platforms.
 It is wired to a Rust FFI crate that executes Monty on-device.
 
 ## Status
@@ -14,12 +14,14 @@ Native module wiring is implemented for both platforms, with:
 - `version()`,
 - `isNativeRuntimeLinked()`.
 
-Web fallback now delegates to `monty-web` through the same `runSync/startSync/resumeSync` bridge contract.
+Web fallback uses an embedded WASM runtime through the same `runSync/startSync/resumeSync` bridge contract.
 
 ## External function example
 
 ```ts
-import { Monty } from "monty-expo";
+import { loadMonty, Monty } from "monty-expo";
+
+await loadMonty();
 
 const monty = new Monty(
   "def run(value):\n    return multiply_and_add(value, 10)\n\nrun(input_value)",
@@ -43,6 +45,7 @@ const output = monty.run({
 
 ```bash
 yarn workspace monty-expo build:rust
+yarn workspace monty-expo build:web-runtime
 yarn workspace monty-expo codegen
 yarn workspace monty-expo build
 ```

@@ -10,6 +10,7 @@ import type {
 export type NativeMontyExpoModuleType = {
     version(): string;
     isNativeRuntimeLinked(): boolean;
+    loadAsync(): Promise<void>;
     runSync(code: string, options?: RunOptions, montyOptions?: MontyOptions): NativeMontyResult;
     startSync(code: string, options?: RunOptions, montyOptions?: MontyOptions): NativeMontyProgressResult;
     resumeSync(snapshotId: string, options?: unknown): NativeMontyProgressResult;
@@ -71,6 +72,9 @@ const NativeMontyExpoModule: NativeMontyExpoModuleType = {
     },
     isNativeRuntimeLinked(): boolean {
         return NativeMontyExpoNitro.isNativeRuntimeLinked();
+    },
+    async loadAsync(): Promise<void> {
+        return Promise.resolve();
     },
     runSync(code: string, options?: RunOptions, montyOptions?: MontyOptions): NativeMontyResult {
         try {

@@ -1,7 +1,7 @@
 {
   "name": "monty-expo",
   "version": "0.1.0",
-  "description": "Nitro Modules bridge for Monty on iOS and Android",
+  "description": "Nitro Modules bridge for Monty on iOS, Android, and web",
   "license": "MIT",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -26,7 +26,8 @@
     "tsconfig.json"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node ./scripts/copy-web-runtime.mjs",
+    "build:web-runtime": "node ./scripts/build-web-runtime.mjs",
     "codegen": "nitrogen --logLevel=\"debug\" && node post-script.js",
     "build:rust": "bash ./scripts/build-rust-all.sh",
     "build:rust:ios": "bash ./scripts/build-rust-ios.sh",
@@ -42,6 +43,9 @@
     "python",
     "module"
   ],
+  "dependencies": {
+    "@napi-rs/wasm-runtime": "^1.1.1"
+  },
   "devDependencies": {
     "nitrogen": "0.35.0",
     "react": "19.2.0",

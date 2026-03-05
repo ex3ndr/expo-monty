@@ -276,6 +276,10 @@ export function montyExpoNativeRuntimeLinked(): boolean {
     return NativeMontyExpoModule.isNativeRuntimeLinked();
 }
 
+export async function loadMonty(): Promise<void> {
+    await NativeMontyExpoModule.loadAsync();
+}
+
 function progressFromNative(result: NativeMontyProgressResult, externalFunctions: ExternalFunctionsMap): MontySnapshot | MontyComplete {
     let current = result;
 

@@ -2,8 +2,7 @@
 
 Yarn workspace monorepo for Monty JS packages:
 
-- `monty-web`: Browser/WASM package built from upstream `pydantic/monty`.
-- `monty-expo`: Nitro Modules package for iOS/Android native bridge.
+- `monty-expo`: Nitro Modules package for iOS/Android native bridge with embedded web/WASM runtime.
 
 ## Quick Start
 
@@ -12,3 +11,5 @@ yarn install
 yarn build:expo
 yarn build:web
 ```
+
+`yarn build:web` refreshes the embedded web runtime from upstream `pydantic/monty`.

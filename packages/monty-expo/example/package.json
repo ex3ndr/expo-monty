@@ -14,10 +14,12 @@
     "expo": "~55.0.4",
     "expo-status-bar": "~55.0.4",
     "expo-system-ui": "~55.0.9",
-    "monty-expo": "file:./monty-expo-0.1.0.tgz",
+    "monty-expo": "file:monty-expo-0.1.0.tgz",
     "react": "19.2.0",
+    "react-dom": "19.2.0",
     "react-native": "0.83.2",
-    "react-native-nitro-modules": "0.35.0"
+    "react-native-nitro-modules": "0.35.0",
+    "react-native-web": "^0.21.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",

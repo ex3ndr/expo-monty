@@ -17,7 +17,7 @@
   "scripts": {
     "build": "yarn build:web && yarn build:expo",
     "build:expo": "yarn workspace monty-expo build",
-    "build:web": "yarn workspace monty-web build",
+    "build:web": "yarn workspace monty-expo build:web-runtime",
     "clean": "yarn workspaces run clean"
   }
 }

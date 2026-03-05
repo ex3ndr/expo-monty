@@ -1,78 +1,127 @@
 import { StatusBar } from "expo-status-bar";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text } from "react-native";
-import { Monty, MontyRuntimeError, montyExpoNativeRuntimeLinked, montyExpoVersion } from "monty-expo";
+import {
+  loadMonty,
+  Monty,
+  MontyRuntimeError,
+  montyExpoNativeRuntimeLinked,
+  montyExpoVersion,
+} from "monty-expo";
+
+type ProbeResult =
+  | {
+      ok: true;
+      output: unknown;
+    }
+  | {
+      ok: false;
+      error: string;
+    };
+
+function formatError(error: unknown): string {
+  if (error instanceof MontyRuntimeError) {
+    return error.display("traceback");
+  }
+  return String(error);
+}
+
+function runBasicProbe(): ProbeResult {
+  try {
+    const monty = new Monty("def add(a, b):\n    return a + b\n\nadd(x, y)", {
+      scriptName: "example.py",
+      inputs: ["x", "y"],
+    });
+    const output = monty.run({
+      inputs: {
+        x: 2,
+        y: 5,
+      },
+    });
+    return {
+      ok: true,
+      output,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: formatError(error),
+    };
+  }
+}
+
+function runExternalProbe(): ProbeResult {
+  try {
+    const monty = new Monty(
+      "def run(value):\n    return multiply_and_add(value, 10)\n\nrun(input_value)",
+      {
+        scriptName: "external-function.py",
+        inputs: ["input_value"],
+      },
+    );
+    const output = monty.run({
+      inputs: {
+        input_value: 2,
+      },
+      externalFunctions: {
+        multiply_and_add: (value: unknown, factor: unknown) => Number(value) * Number(factor) + 7,
+      },
+    });
+    return {
+      ok: true,
+      output,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: formatError(error),
+    };
+  }
+}
 
 export default function App() {
-  const probe = useMemo(() => {
-    try {
-      console.log("[monty-expo example] running native Monty probe");
-      const monty = new Monty("def add(a, b):\n    return a + b\n\nadd(x, y)", {
-        scriptName: "example.py",
-        inputs: ["x", "y"],
-      });
-      const output = monty.run({
-        inputs: {
-          x: 2,
-          y: 5,
-        },
-      });
-      console.log("[monty-expo example] probe success", output);
-      return {
-        ok: true as const,
-        output,
-      };
-    } catch (error) {
-      console.log("[monty-expo example] probe failed", error);
-      if (error instanceof MontyRuntimeError) {
-        return {
-          ok: false as const,
-          error: error.display("traceback"),
-        };
-      }
-      return {
-        ok: false as const,
-        error: String(error),
-      };
-    }
-  }, []);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [probe, setProbe] = useState<ProbeResult | null>(null);
+  const [externalFunctionProbe, setExternalFunctionProbe] = useState<ProbeResult | null>(null);
 
-  const externalFunctionProbe = useMemo(() => {
-    try {
-      console.log("[monty-expo example] running external function probe");
-      const monty = new Monty(
-        "def run(value):\n    return multiply_and_add(value, 10)\n\nrun(input_value)",
-        {
-          scriptName: "external-function.py",
-          inputs: ["input_value"],
-        },
-      );
-      const output = monty.run({
-        inputs: {
-          input_value: 2,
-        },
-        externalFunctions: {
-          multiply_and_add: (value: unknown, factor: unknown) => Number(value) * Number(factor) + 7,
-        },
-      });
-      console.log("[monty-expo example] external function probe success", output);
-      return {
-        ok: true as const,
-        output,
-      };
-    } catch (error) {
-      console.log("[monty-expo example] external function probe failed", error);
-      if (error instanceof MontyRuntimeError) {
-        return {
-          ok: false as const,
-          error: error.display("traceback"),
-        };
+  useEffect(() => {
+    let mounted = true;
+
+    const run = async () => {
+      try {
+        console.log("[monty-expo example] loading Monty runtime");
+        await loadMonty();
+        console.log("[monty-expo example] Monty runtime loaded");
+
+        if (!mounted) {
+          return;
+        }
+
+        console.log("[monty-expo example] running basic probe");
+        const nextProbe = runBasicProbe();
+        console.log("[monty-expo example] running external probe");
+        const nextExternalProbe = runExternalProbe();
+
+        setProbe(nextProbe);
+        setExternalFunctionProbe(nextExternalProbe);
+      } catch (error) {
+        console.log("[monty-expo example] load failed", error);
+        if (mounted) {
+          setLoadError(formatError(error));
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
-      return {
-        ok: false as const,
-        error: String(error),
-      };
-    }
+    };
+
+    run();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
@@ -80,14 +129,16 @@ export default function App() {
       <Text style={styles.title}>monty-expo native check</Text>
       <Text style={styles.line}>native linked: {String(montyExpoNativeRuntimeLinked())}</Text>
       <Text style={styles.line}>module version: {montyExpoVersion()}</Text>
+      <Text style={styles.line}>runtime loaded: {loading ? "loading" : loadError ? "error" : "ready"}</Text>
+      {loadError ? <Text style={styles.error}>{loadError}</Text> : null}
+
+      <Text style={styles.line}>basic run result: {probe?.ok ? JSON.stringify(probe.output) : probe ? "error" : "pending"}</Text>
+      {probe && !probe.ok ? <Text style={styles.error}>{probe.error}</Text> : null}
+
       <Text style={styles.line}>
-        basic run result: {probe.ok ? JSON.stringify(probe.output) : "error"}
+        external call result: {externalFunctionProbe?.ok ? JSON.stringify(externalFunctionProbe.output) : externalFunctionProbe ? "error" : "pending"}
       </Text>
-      {!probe.ok ? <Text style={styles.error}>{probe.error}</Text> : null}
-      <Text style={styles.line}>
-        external call result: {externalFunctionProbe.ok ? JSON.stringify(externalFunctionProbe.output) : "error"}
-      </Text>
-      {!externalFunctionProbe.ok ? <Text style={styles.error}>{externalFunctionProbe.error}</Text> : null}
+      {externalFunctionProbe && !externalFunctionProbe.ok ? <Text style={styles.error}>{externalFunctionProbe.error}</Text> : null}
       <StatusBar style="auto" />
     </ScrollView>
   );
